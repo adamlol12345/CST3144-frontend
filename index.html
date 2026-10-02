@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+</head>
+<body>
+    
+
+    <script type = "module">
+        const {createApp} = Vue
+        const myApp = createApp({
+            data(){
+                return {
+                    message: "After School Classes and Activities",
+                    subject: "Information Technology",
+                    location: "Hendon",
+                    price: "£150",
+                    it: {
+                        name:"information technology",
+                        image:"images/IT.jpeg",
+                        alt: "informaton technology image"
+                    }
+                }
+            }
+        })
+        myApp.mount('#app')
+    </script>
+
+    <div id= 'app'>
+    <h1 v-text = "message"></h1>
+    <h2 v-text = "subject"></h2>
+    <p>The location of the after school club will be at {{location}}, London.</p>
+    <p>The price of the after school sessions are {{price}}.</p>
+    <img v-bind:src="it.image" v-bind:alt="it.alt" width =300>
+
+    </div>
+
+</body>
+</html>
