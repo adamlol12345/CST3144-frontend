@@ -1,3 +1,6 @@
+<!DOCTYPE html>
+<html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -6,38 +9,63 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
     <style>
-    .lessons {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
+        .lessons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
 
-    .lesson {
-        width: calc(20% - 10px);
-        box-sizing: border-box;
-        border: 3px solid black;
-        padding: 8px;
-        text-align: center;
-    }
+        .lesson {
+            width: calc(20% - 10px);
+            box-sizing: border-box;
+            border: 3px solid black;
+            padding: 8px;
+            text-align: center;
+        }
 
-    .lesson h2 {
-        font-size: 25px;
-    }
+        .lesson h2 {
+            font-size: 25px;
+        }
 
-    .lesson p {
-        font-size: 16px;
-    }
+        .lesson p {
+            font-size: 16px;
+        }
 
-    .lesson img {
-        width: 100%;
-        height: 100px;
-        object-fit: cover;
-    }
+        .lesson img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+        }
 
-</style>
+        button {
+            padding: 8px 12px;
+            margin: 5px;
+            cursor: pointer;
+        }
 
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
 
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
 
+        th, td {
+            border: 1px solid black;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #eeeeee;
+        }
+
+    </style>
+</head>
 
 <body>
 
@@ -45,7 +73,15 @@
 
         <h1 v-text="message"></h1>
 
-        <div class="lessons">
+        <!-- Shopping Cart Button -->
+        <button
+            @click="showCart = !showCart"
+        >
+            {{ showCart ? 'Back to Lessons' : 'Shopping Cart (' + cart.length + ')' }}
+        </button>
+
+        <!-- LESSONS PAGE -->
+        <div v-if="!showCart" class="lessons">
 
             <div
                 v-for="lesson in lessons"
@@ -62,37 +98,111 @@
                 <p>Spaces available: {{ lesson.spaces }}</p>
 
                 <img
-                    v-bind:src="lesson.image"
-                    v-bind:alt="lesson.alt"
+                    :src="lesson.image"
+                    :alt="lesson.alt"
                 >
-                <button 
-                    v-on:click="addToCart(lesson)"
-                    :disabled="!canAddToCart(lesson)">
+
+                <button
+                    @click="addToCart(lesson)"
+                    :disabled="!canAddToCart(lesson)"
+                >
                     Add to Cart
-    </button>
+                </button>
+
             </div>
+
+        </div>
+
+        <!-- SHOPPING CART PAGE -->
+        <div v-else>
+
+            <h2>Your Shopping Cart</h2>
+
+            <table v-if="cart.length > 0">
+
+                <thead>
+                    <tr>
+                        <th>Lesson</th>
+                        <th>Location</th>
+                        <th>Price</th>
+                        <th>Remove if needed</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr
+                        v-for="(lesson, index) in cart"
+                        :key="lesson.cartId"
+                    >
+                        <td>{{ lesson.subject }}</td>
+                        <td>{{ lesson.location }}</td>
+                        <td>{{ lesson.price }}</td>
+
+                        <td>
+                            <button @click="removeFromCart(index)">
+                                Remove
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+
+                <tfoot>
+                    <tr>
+                        <td colspan="2">
+                            <strong>Total</strong>
+                        </td>
+
+                        <td>
+                            <strong>£{{ cartTotal }}</strong>
+                        </td>
+
+                        <td></td>
+                    </tr>
+                </tfoot>
+
+            </table>
+
+            <p>
+                Name: <input v-model="fullname">
+                <span v-if="fullname && !isNameValid" style="color:red;">
+                    Letters only
+                </span>
+            </p>
+
+            <p>
+                Phone: <input v-model="number">
+                <span v-if="number && !isPhoneValid" style="color: red;">
+                    Numbers only
+                </span>
+            </p>
+
+            <button @click="submitOrder">
+                Submit Order
+            </button>
+
+            <p v-if="orderError" style="color: red;">
+                {{ orderError }}
+            </p>
+
+            <p v-if="orderSubmitted" style="color: green;">
+                Your order has been submitted successfully!
+            </p>
 
         </div>
 
     </div>
 
-
-
-    <script type="module">
-
-        const { createApp } = Vue
+    <script>
+        const { createApp } = Vue;
 
         const myApp = createApp({
 
             data() {
-
                 return {
-
                     message: "After School Classes and Activities",
 
                     lessons: [
-
-                          {
+                        {
                             id: 1,
                             subject: "Information Technology",
                             location: "Hendon",
@@ -101,7 +211,6 @@
                             image: "images/IT.jpeg",
                             alt: "Information Technology image"
                         },
-
                         {
                             id: 2,
                             subject: "Mathematics",
@@ -111,7 +220,6 @@
                             image: "images/Mathematics.jpg",
                             alt: "Mathematics image"
                         },
-
                         {
                             id: 3,
                             subject: "Science",
@@ -121,9 +229,7 @@
                             image: "images/Science.avif",
                             alt: "Science image"
                         },
-
                         {
-                            
                             id: 4,
                             subject: "Physical Education",
                             location: "Luton",
@@ -132,9 +238,7 @@
                             image: "images/PE.jpg",
                             alt: "Physical Education image"
                         },
-
                         {
-                        
                             id: 5,
                             subject: "Religious Education",
                             location: "Barnet",
@@ -142,11 +246,8 @@
                             spaces: 5,
                             image: "images/RE.png",
                             alt: "Religious Education image"
-                        
                         },
-
                         {
-
                             id: 6,
                             subject: "English",
                             location: "Brentford",
@@ -155,9 +256,7 @@
                             image: "images/English.jpg",
                             alt: "English image"
                         },
-
                         {
-                        
                             id: 7,
                             subject: "History",
                             location: "Chelsea",
@@ -165,11 +264,8 @@
                             spaces: 5,
                             image: "images/History.jpg",
                             alt: "History image"
-                        
                         },
-
                         {
-                        
                             id: 8,
                             subject: "Music",
                             location: "Hendon",
@@ -177,11 +273,8 @@
                             spaces: 5,
                             image: "images/Music.jpg",
                             alt: "Music image"
-                        
                         },
-
                         {
-                        
                             id: 9,
                             subject: "Art",
                             location: "Hendon",
@@ -189,11 +282,8 @@
                             spaces: 5,
                             image: "images/Art.avif",
                             alt: "Art image"
-                        
                         },
-
                         {
-                        
                             id: 10,
                             subject: "Geography",
                             location: "Hendon",
@@ -202,38 +292,96 @@
                             image: "images/Geography.jpg",
                             alt: "Geography image"
                         }
-                        
-                    
-                        
                     ],
-                    cart: []
 
-                }
-
+                    cart: [],
+                    showCart: false,
+                    nextCartId: 1,
+                    fullname: "",
+                    number: "",
+                    orderSubmitted: false,
+                    orderError: ""
+                };
             },
-        
-        
+
             computed: {
-            canAddToCart() {
-            return (lesson) => lesson.spaces > 0
-            }
-        },
+                canAddToCart() {
+                    return (lesson) => lesson.spaces > 0;
+                },
+
+                cartTotal() {
+                    return this.cart.reduce((total, lesson) => {
+                        return total + Number(
+                            lesson.price.replace('£', '')
+                        );
+                    }, 0).toFixed(2);
+                },
+
+                isNameValid() {
+                    return /^[A-Za-z ]+$/.test(this.fullname.trim());
+                },
+
+                isPhoneValid() {
+                    return /^\d+$/.test(this.number.trim());
+                },
+
+                isFormValid() {
+                    return this.isNameValid &&
+                           this.isPhoneValid &&
+                           this.cart.length > 0;
+                }
+            },
 
             methods: {
-            addToCart(lesson) {
-                if (lesson.spaces > 0) {
-                lesson.spaces--
-                this.cart.push(lesson)
+                addToCart(lesson) {
+                    if (lesson.spaces > 0) {
+                        lesson.spaces--;
+
+                        this.cart.push({
+                            ...lesson,
+                            cartId: this.nextCartId++
+                        });
+                    }
+                },
+
+                removeFromCart(index) {
+                    const removedLesson = this.cart[index];
+
+                    const originalLesson = this.lessons.find(
+                        lesson => lesson.id === removedLesson.id
+                    );
+
+                    if (originalLesson) {
+                        originalLesson.spaces++;
+                    }
+
+                    this.cart.splice(index, 1);
+                },
+
+                submitOrder() {
+                    if (!this.isNameValid || !this.isPhoneValid) {
+                        this.orderSubmitted = false;
+                        this.orderError =
+                            "Please enter a valid name and phone number.";
+                        return;
+                    }
+
+                    if (this.cart.length === 0) {
+                        this.orderSubmitted = false;
+                        this.orderError =
+                            "Please add at least one lesson to your cart.";
+                        return;
+                    }
+
+                    this.orderError = "";
+                    this.orderSubmitted = true;
                 }
-            },
-            
-        }
-        })
+            }
 
-        myApp.mount('#app')
+        });
 
+        myApp.mount('#app');
     </script>
 
 </body>
-
 </html>
