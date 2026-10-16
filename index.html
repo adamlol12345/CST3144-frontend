@@ -80,40 +80,53 @@
             {{ showCart ? 'Back to Lessons' : 'Shopping Cart (' + cart.length + ')' }}
         </button>
 
-        <!-- LESSONS PAGE -->
-        <div v-if="!showCart" class="lessons">
 
-            <div
-                v-for="lesson in lessons"
-                :key="lesson.id"
-                class="lesson"
+        
+<!-- LESSONS PAGE -->
+<div v-if="!showCart">
+
+    <label for="sortType">Sort by:</label>
+    <select id="sortType" v-model="showType">
+        <option value="subject">Subject</option>
+        <option value="location">Location</option>
+        <option value="price">Price</option>
+        <option value="spaces">Spaces Available</option>
+    </select>
+
+    <label for="sortOrder" style="margin-left: 15px;">Order:</label>
+
+    <select id="sortOrder" v-model="showAscending">
+        <option :value="true">Ascending</option>
+        <option :value="false">Descending</option>
+    </select>
+
+    <div class="lessons">
+        <div
+            v-for="lesson in sortedLessons"
+            :key="lesson.id"
+            class="lesson"
+        >
+            <h2>{{ lesson.subject }}</h2>
+            <p>Location: {{ lesson.location }}</p>
+            <p>Price: {{ lesson.price }}</p>
+            <p>Spaces available: {{ lesson.spaces }}</p>
+
+            <img :src="lesson.image" :alt="lesson.alt">
+
+            <button
+                @click="addToCart(lesson)"
+                :disabled="!canAddToCart(lesson)"
             >
-
-                <h2>{{ lesson.subject }}</h2>
-
-                <p>Location: {{ lesson.location }}</p>
-
-                <p>Price: {{ lesson.price }}</p>
-
-                <p>Spaces available: {{ lesson.spaces }}</p>
-
-                <img
-                    :src="lesson.image"
-                    :alt="lesson.alt"
-                >
-
-                <button
-                    @click="addToCart(lesson)"
-                    :disabled="!canAddToCart(lesson)"
-                >
-                    Add to Cart
-                </button>
-
-            </div>
-
+                Add to Cart
+            </button>
         </div>
+    </div>
 
-        <!-- SHOPPING CART PAGE -->
+</div>
+
+
+        
+<!-- SHOPPING CART PAGE -->
         <div v-else>
 
             <h2>Your Shopping Cart</h2>
@@ -193,195 +206,123 @@
     </div>
 
     <script>
-        const { createApp } = Vue;
+    
+const { createApp } = Vue;
+const API_URL = "http://localhost:8080/";
 
-        const myApp = createApp({
+const myApp = createApp({
+   data() {
+     return {
+       message: "After School Classes and Activities",
+       lessons: [],
+       cart: [],
+       showCart: false,
+       nextCartId: 1,
+       fullname: "",
+       number: "",
+       orderSubmitted: false,
+       orderError: "",
 
-            data() {
-                return {
-                    message: "After School Classes and Activities",
+       showType: "price",
+       showAscending: true
+     };
+   },
+    created() {
+     this.fetchData();
+   },
+    
+   
+    computed: {
+     canAddToCart() {
+       return (lesson) => lesson.spaces > 0;
+     },
+     cartTotal() {
+        return this.cart.reduce((total, lesson) => {
+         return total + Number(lesson.price.replace('£', ''));
+       }, 0).toFixed(2);
+     },
+        isNameValid() {
+            return /^[A-Za-z ]+$/.test(this.fullname.trim());
+     },
+        isPhoneValid() {
+            return /^\d+$/.test(this.number.trim());
+     },
+        isFormValid() {
+            return this.isNameValid && this.isPhoneValid && this.cart.length > 0;
+},  
 
-                    lessons: [
-                        {
-                            id: 1,
-                            subject: "Information Technology",
-                            location: "Hendon",
-                            price: "£120",
-                            spaces: 5,
-                            image: "images/IT.jpeg",
-                            alt: "Information Technology image"
-                        },
-                        {
-                            id: 2,
-                            subject: "Mathematics",
-                            location: "Brighton",
-                            price: "£50",
-                            spaces: 5,
-                            image: "images/Mathematics.jpg",
-                            alt: "Mathematics image"
-                        },
-                        {
-                            id: 3,
-                            subject: "Science",
-                            location: "Cambridge",
-                            price: "£60",
-                            spaces: 5,
-                            image: "images/Science.avif",
-                            alt: "Science image"
-                        },
-                        {
-                            id: 4,
-                            subject: "Physical Education",
-                            location: "Luton",
-                            price: "£90",
-                            spaces: 5,
-                            image: "images/PE.jpg",
-                            alt: "Physical Education image"
-                        },
-                        {
-                            id: 5,
-                            subject: "Religious Education",
-                            location: "Barnet",
-                            price: "£80",
-                            spaces: 5,
-                            image: "images/RE.png",
-                            alt: "Religious Education image"
-                        },
-                        {
-                            id: 6,
-                            subject: "English",
-                            location: "Brentford",
-                            price: "£100",
-                            spaces: 5,
-                            image: "images/English.jpg",
-                            alt: "English image"
-                        },
-                        {
-                            id: 7,
-                            subject: "History",
-                            location: "Chelsea",
-                            price: "£95",
-                            spaces: 5,
-                            image: "images/History.jpg",
-                            alt: "History image"
-                        },
-                        {
-                            id: 8,
-                            subject: "Music",
-                            location: "Hendon",
-                            price: "£110",
-                            spaces: 5,
-                            image: "images/Music.jpg",
-                            alt: "Music image"
-                        },
-                        {
-                            id: 9,
-                            subject: "Art",
-                            location: "Hendon",
-                            price: "£90",
-                            spaces: 5,
-                            image: "images/Art.avif",
-                            alt: "Art image"
-                        },
-                        {
-                            id: 10,
-                            subject: "Geography",
-                            location: "Hendon",
-                            price: "£95",
-                            spaces: 5,
-                            image: "images/Geography.jpg",
-                            alt: "Geography image"
-                        }
-                    ],
+sortedLessons() {
+    const sorted = [...this.lessons];
 
-                    cart: [],
-                    showCart: false,
-                    nextCartId: 1,
-                    fullname: "",
-                    number: "",
-                    orderSubmitted: false,
-                    orderError: ""
-                };
-            },
+    sorted.sort((a, b) => {
+        let result;
 
-            computed: {
-                canAddToCart() {
-                    return (lesson) => lesson.spaces > 0;
-                },
+        if (this.showType === "price") {
+            const priceA = Number(String(a.price).replace(/[£,\s]/g, ""));
+            const priceB = Number(String(b.price).replace(/[£,\s]/g, ""));
+            result = priceA - priceB;
+        } else if (this.showType === "spaces") {
+            result = Number(a.spaces) - Number(b.spaces);
+        } else {
+            result = String(a[this.showType] ?? "").localeCompare(
+                String(b[this.showType] ?? ""),
+                undefined,
+                { sensitivity: "base" }
+            );
+        }
 
-                cartTotal() {
-                    return this.cart.reduce((total, lesson) => {
-                        return total + Number(
-                            lesson.price.replace('£', '')
-                        );
-                    }, 0).toFixed(2);
-                },
+        return this.showAscending ? result : -result;
+    });
 
-                isNameValid() {
-                    return /^[A-Za-z ]+$/.test(this.fullname.trim());
-                },
+    return sorted;
+}
+   },
 
-                isPhoneValid() {
-                    return /^\d+$/.test(this.number.trim());
-                },
+   methods: {
+     async fetchData() {
+       try {
+         const response = await fetch(API_URL); 
+         this.lessons = await response.json();
+       } catch (error) {
+         console.error("Error fetching data:", error);
+       }
+     },
+     addToCart(lesson) {
+       if (lesson.spaces > 0) {
+         lesson.spaces--;
+         this.cart.push({ ...lesson, cartId: this.nextCartId++ });
+       }
+     },
+     removeFromCart(index) {
+       const removedLesson = this.cart[index];
+       const originalLesson = this.lessons.find(
+         lesson => lesson.id === removedLesson.id
+       );
+       if (originalLesson) {
+         originalLesson.spaces++;
+       }
+       this.cart.splice(index, 1);
+     },
+     submitOrder() {
+       if (!this.isNameValid || !this.isPhoneValid) {
+         this.orderSubmitted = false;
+         this.orderError = "Please enter a valid name and phone number.";
+         return;
+       }
+       if (this.cart.length === 0) {
+         this.orderSubmitted = false;
+         this.orderError = "Please add at least one lesson to your cart.";
+         return;
+       }
+       this.orderError = "";
+       this.orderSubmitted = true;
+     }
+   }
+ });
 
-                isFormValid() {
-                    return this.isNameValid &&
-                           this.isPhoneValid &&
-                           this.cart.length > 0;
-                }
-            },
+ myApp.mount('#app');
+</script>
 
-            methods: {
-                addToCart(lesson) {
-                    if (lesson.spaces > 0) {
-                        lesson.spaces--;
-
-                        this.cart.push({
-                            ...lesson,
-                            cartId: this.nextCartId++
-                        });
-                    }
-                },
-
-                removeFromCart(index) {
-                    const removedLesson = this.cart[index];
-
-                    const originalLesson = this.lessons.find(
-                        lesson => lesson.id === removedLesson.id
-                    );
-
-                    if (originalLesson) {
-                        originalLesson.spaces++;
-                    }
-
-                    this.cart.splice(index, 1);
-                },
-
-                submitOrder() {
-                    if (!this.isNameValid || !this.isPhoneValid) {
-                        this.orderSubmitted = false;
-                        this.orderError =
-                            "Please enter a valid name and phone number.";
-                        return;
-                    }
-
-                    if (this.cart.length === 0) {
-                        this.orderSubmitted = false;
-                        this.orderError =
-                            "Please add at least one lesson to your cart.";
-                        return;
-                    }
-
-                    this.orderError = "";
-                    this.orderSubmitted = true;
-                }
-            }
-
-        });
-
-        myApp.mount('#app');
-    </script>
 
 </body>
 </html>
