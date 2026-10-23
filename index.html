@@ -111,7 +111,7 @@
             <p>Price: {{ lesson.price }}</p>
             <p>Spaces available: {{ lesson.spaces }}</p>
 
-            <img :src="lesson.image" :alt="lesson.alt">
+            <img :src="imageAddress(lesson)" :alt="lesson.alt">
 
             <button
                 @click="addToCart(lesson)"
@@ -208,7 +208,7 @@
     <script>
     
 const { createApp } = Vue;
-const API_URL = "http://localhost:8080/";
+const API_URL = "http://localhost:3000/";
 
 const myApp = createApp({
    data() {
@@ -279,10 +279,37 @@ sortedLessons() {
    },
 
    methods: {
+    imageAddress(lesson) {
+        return API_URL + "images/" + lesson.image;
+    },
+
      async fetchData() {
        try {
-         const response = await fetch(API_URL); 
+         const response = await fetch(API_URL + "lessons");
+         
+         if (!response.ok) {
+            throw new Error("HTTP error: " + response.status);
+
+         }
          this.lessons = await response.json();
+
+        const imageNames = {
+                1: "IT.jpeg",
+                2: "Mathematics.jpg",
+                3: "Science.avif",
+                4: "PE.jpg",
+                5: "RE.png",
+                6: "English.jpg",
+                7: "History.jpg",
+                8: "Music.jpg",
+                9: "Art.avif",
+                10: "Geography.jpg"
+            };
+
+            this.lessons.forEach(lesson => {
+                lesson.image = imageNames[lesson.id];
+            });
+            
        } catch (error) {
          console.error("Error fetching data:", error);
        }
@@ -303,7 +330,8 @@ sortedLessons() {
        }
        this.cart.splice(index, 1);
      },
-     submitOrder() {
+     
+     async submitOrder() {
        if (!this.isNameValid || !this.isPhoneValid) {
          this.orderSubmitted = false;
          this.orderError = "Please enter a valid name and phone number.";
@@ -315,10 +343,51 @@ sortedLessons() {
          return;
        }
        this.orderError = "";
-       this.orderSubmitted = true;
-     }
-   }
- });
+       this.orderSubmitted = false;
+
+       await this.postOrder();
+
+     },
+     async postOrder() {
+        const url = API_URL + "orders";
+
+        const orders = {
+            fullname: this.fullname,
+            number: this.number,
+            lessonIDs: this.cart.map(lesson => lesson.id),
+            totalPrice: this.cartTotal
+        };
+
+        const options = {
+            method: 'POST',
+            headers: {
+                    'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(orders)
+        };
+
+    try {
+        const response = await fetch(url, options);
+
+        if (!response.ok) {
+            throw new Error("HTTP error: " + response.status);
+        }
+
+        const data = await response.json();
+
+        console.log(data.message);
+
+        this.orderSubmitted = true;
+        this.orderError = "";
+
+    } catch (error) {
+        console.error("Error submitting order:", error);
+
+        this.orderSubmitted = false;
+        this.orderError =
+            "Unable to submit your order. Please try again.";
+    }
+}}});
 
  myApp.mount('#app');
 </script>
