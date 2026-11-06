@@ -330,7 +330,28 @@ sortedLessons() {
        }
        this.cart.splice(index, 1);
      },
-     
+     async updateLesson(lesson){
+        let updateBody = {
+        spaces: lesson.spaces
+    };
+    const url = "http://localhost:3000/lessons/" + lesson._id;
+    const options = {
+    method: 'PUT',
+    headers: {
+        'Content-Type': 'application/json'
+            },
+        body: JSON.stringify(updateBody)
+ }
+    let response = await (fetch (url, options));
+
+    if (!response.ok) {
+        throw new Error("Failed to update lesson spaces");
+    }
+
+    let result = await response.json();
+    console.log("Spaces updated:", result);
+ },
+
      async submitOrder() {
        if (!this.isNameValid || !this.isPhoneValid) {
          this.orderSubmitted = false;
@@ -376,6 +397,14 @@ sortedLessons() {
         const data = await response.json();
 
         console.log(data.message);
+
+        for (let lesson of this.cart) {
+            const originalLesson = this.lessons.find(
+                item => item.id === lesson.id
+    );
+
+            await this.updateLesson(originalLesson);
+        }
 
         this.orderSubmitted = true;
         this.orderError = "";
