@@ -208,7 +208,7 @@
     <script>
     
 const { createApp } = Vue;
-const API_URL = "http://localhost:3000/";
+const API_URL = "https://backend-m01004251.onrender.com";
 
 const myApp = createApp({
    data() {
@@ -334,7 +334,7 @@ sortedLessons() {
         let updateBody = {
         spaces: lesson.spaces
     };
-    const url = "http://localhost:3000/lessons/" + lesson._id;
+    const url = "https://backend-m01004251.onrender.com/lessons/" + lesson._id;
     const options = {
     method: 'PUT',
     headers: {
