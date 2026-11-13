@@ -280,12 +280,12 @@ sortedLessons() {
 
    methods: {
     imageAddress(lesson) {
-        return API_URL + "images/" + lesson.image;
+        return API_URL + "/images/" + lesson.image;
     },
 
      async fetchData() {
        try {
-         const response = await fetch(API_URL + "lessons");
+         const response = await fetch(API_URL + "/lessons");
          
          if (!response.ok) {
             throw new Error("HTTP error: " + response.status);
@@ -370,7 +370,7 @@ sortedLessons() {
 
      },
      async postOrder() {
-        const url = API_URL + "orders";
+        const url = API_URL + "/orders";
 
         const orders = {
             fullname: this.fullname,
